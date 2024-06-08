@@ -140,5 +140,4 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,linux,windows,macos,vim,go
 
 #AdventOfCode
-input.txt
-input*.txt
+*.txt
