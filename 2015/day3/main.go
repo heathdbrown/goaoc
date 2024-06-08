@@ -22,6 +22,11 @@ type Coordinate struct {
 	y int
 }
 
+type DeliveryMan struct {
+	position Coordinate
+	path     Path
+}
+
 type Path []Coordinate
 
 func parseLine(s string) []string {
@@ -65,6 +70,42 @@ func countHouses(directions []string) int {
 	return len(unique(santaPath))
 }
 
+func countSantaAndRoboHouses(directions []string) int {
+	var santa, roboSanta DeliveryMan
+
+	var presentPath Path
+
+	santa.path = append(santa.path, santa.position)
+	roboSanta.path = append(roboSanta.path, roboSanta.position)
+	deliveryMan := &santa
+	for _, d := range directions {
+		switch d {
+		case "^":
+			deliveryMan.position.y++
+
+		case "v":
+			deliveryMan.position.y--
+
+		case ">":
+			deliveryMan.position.x++
+		case "<":
+			deliveryMan.position.x--
+
+		}
+		deliveryMan.path = append(deliveryMan.path, deliveryMan.position)
+		switch {
+		case deliveryMan == &santa:
+			deliveryMan = &roboSanta
+		case deliveryMan == &roboSanta:
+			deliveryMan = &santa
+		}
+
+	}
+	presentPath = append(presentPath, santa.path...)
+	presentPath = append(presentPath, roboSanta.path...)
+	return len(unique(presentPath))
+}
+
 func main() {
 	fmt.Println("2015_day3")
 
@@ -76,4 +117,5 @@ func main() {
 	directions := parseLine(string(file))
 
 	fmt.Printf("Part1:%d\n", countHouses(directions))
+	fmt.Printf("Part2:%d\n", countSantaAndRoboHouses(directions))
 }
