@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -18,6 +20,8 @@ type instruction struct {
 	StartCoordinate Coordinate
 	EndCoordinate   Coordinate
 }
+
+type instructions []instruction
 
 func parseCoordinates(c []string) (int, int) {
 	x, err := strconv.Atoi(c[0])
@@ -66,4 +70,23 @@ func parseLine(line string) instruction {
 
 func main() {
 	fmt.Println("2015 day6")
+	file, err := os.Open("input.txt")
+	if err != nil {
+		log.Fatal("Error with opening issues")
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	var i instructions
+	for scanner.Scan() {
+		i = append(i, parseLine(scanner.Text()))
+	}
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	for _, order := range i {
+		fmt.Println(order)
+	}
 }
