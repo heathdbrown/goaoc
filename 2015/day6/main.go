@@ -5,88 +5,82 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
-type Coordinate struct {
-	x int
-	y int
-}
-
-type instruction struct {
-	Action          string
-	SubAction       string
-	StartCoordinate Coordinate
-	EndCoordinate   Coordinate
-}
-
-type instructions []instruction
-
-func parseCoordinates(c []string) (int, int) {
-	x, err := strconv.Atoi(c[0])
-	if err != nil {
-		log.Fatal("Error with string conversion")
-	}
-
-	y, err := strconv.Atoi(c[1])
-	if err != nil {
-		log.Fatal("Error with string conversion")
-	}
-
-	return x, y
-}
-
-func parseLine(line string) instruction {
-	l := strings.Split(line, " ")
-	i := instruction{Action: l[0]}
-
-	switch l[0] {
-	case "turn":
-		// turn on 0,0 through 999,999
-		// 0    1  2   3       4
-		// A    SA SC  -       EC
-		i.SubAction = l[1]
-		sc := strings.Split(l[2], ",")
-
-		i.StartCoordinate.x, i.StartCoordinate.y = parseCoordinates(sc)
-
-		ec := strings.Split(l[4], ",")
-
-		i.EndCoordinate.x, i.EndCoordinate.y = parseCoordinates(ec)
-	case "toggle":
-		// toggle 0,0 through 999,0
-		// 0      1   2       3
-		sc := strings.Split(l[1], ",")
-
-		i.StartCoordinate.x, i.StartCoordinate.y = parseCoordinates(sc)
-		ec := strings.Split(l[3], ",")
-
-		i.EndCoordinate.x, i.EndCoordinate.y = parseCoordinates(ec)
-	}
-
-	return i
-}
-
+// based on the following https://www.kaggle.com/code/jaeihn/advent-of-code-2015-day-6-solutions
 func main() {
-	fmt.Println("2015 day6")
+	lights := make([]bool, 1000000)
 	file, err := os.Open("input.txt")
 	if err != nil {
-		log.Fatal("Error with opening issues")
+		log.Fatal("Error with reading file")
 	}
 	defer file.Close()
-
 	scanner := bufio.NewScanner(file)
 
-	var i instructions
+	r, err := regexp.Compile(`\d+`)
 	for scanner.Scan() {
-		i = append(i, parseLine(scanner.Text()))
+		// fmt.Println(scanner.Text())
+		// [222 12 856 241]
+		coord := r.FindAllString(scanner.Text(), -1)
+
+		x_i, err := strconv.Atoi(coord[0])
+		if err != nil {
+			log.Fatal("Error with string conversion to integer")
+		}
+		y_i, err := strconv.Atoi(coord[1])
+		if err != nil {
+			log.Fatal("Error with string conversion to integer")
+		}
+		x_f, err := strconv.Atoi(coord[2])
+		if err != nil {
+			log.Fatal("Error with string conversion to integer")
+		}
+		y_f, err := strconv.Atoi(coord[3])
+		if err != nil {
+			log.Fatal("Error with string conversion to integer")
+		}
+
+		switch {
+		case strings.HasPrefix(scanner.Text(), "turn on"):
+			for i := x_i; i <= x_f; i++ {
+				for j := y_i; j <= y_f; j++ {
+					lights[j*1000+i] = true
+				}
+			}
+		case strings.HasPrefix(scanner.Text(), "turn off"):
+			for i := x_i; i <= x_f; i++ {
+				for j := y_i; j <= y_f; j++ {
+					lights[j*1000+i] = false
+				}
+			}
+		case strings.HasPrefix(scanner.Text(), "toggle"):
+			for i := x_i; i <= x_f; i++ {
+				for j := y_i; j <= y_f; j++ {
+					lights[j*1000+i] = !lights[j*1000+i]
+				}
+			}
+		}
 	}
+
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
 
-	for _, order := range i {
-		fmt.Println(order)
+	count := 0
+	for i := 0; i < 1000000; i++ {
+		if lights[i] == true {
+			count += 1
+		}
 	}
+	// for line := range string(file) {
+	// 	fmt.Println(line)
+	// }
+
+	// var lights [100000000]bool
+
+	// fmt.Println(lights)
+	fmt.Println(count)
 }
